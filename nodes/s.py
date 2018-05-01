@@ -14,10 +14,12 @@ S_SCK.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 def response_handler():
     while True:
         msg = S_SCK.recv(1024)
-        print(f"::MSG:: {msg.decode('utf-8')}")
+        if msg is not None:
+            print(f"::MSG:: {msg.decode('utf-8')}")
 
 def chat():
     S_SCK.connect((str(REM_HOST), int(REM_PORT)))
+    print('::CONNECTED::')
     t = threading.Thread(target=response_handler)
     t.start()
     while True:
