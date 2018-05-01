@@ -5,6 +5,7 @@ import sys
 __author__ = 'Adrian Agnic'
 __version__ = '0.0.1'
 
+
 REM_HOST = sys.argv[1]
 REM_PORT = sys.argv[2]
 S_SCK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
