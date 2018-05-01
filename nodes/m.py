@@ -1,3 +1,4 @@
+''' server for establishing tcp connections and maintaining info b/w them '''
 import socket
 import threading
 import sys

@@ -1,3 +1,4 @@
+''' client for producing/consuming messages to tcp server '''
 import socket
 import threading
 import sys
