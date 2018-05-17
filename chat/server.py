@@ -21,6 +21,7 @@ def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.setblocking(False)
+    sel_inputs.append(server_socket)
     server_socket.bind((str(HOST), int(PORT)))
     # backlog up to 5 connections if busy
     server_socket.listen(5)
@@ -35,6 +36,7 @@ def main():
                 new_connection.setblocking(False)
                 # build list of connections
                 sel_inputs.append(new_connection)
+                sel_outputs.append(new_connection)
                 # init queues for msg data since await for writable state
                 message_pipeline[new_connection] = queue.Queue()
             else:
@@ -45,8 +47,9 @@ def main():
                         # check not sending back to origin
                         if conn is not sock:
                             message_pipeline[conn].put(client_message)
-                        if conn not in sel_outputs:
-                            sel_outputs.append(conn)
+                    if sock not in sel_outputs:
+                        # add to outputs for recv responses
+                        sel_outputs.append(sock)
                 else:
                     # readable socket w/ no data is closed
                     if sock in sel_outputs:
