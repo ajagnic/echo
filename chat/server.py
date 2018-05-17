@@ -27,7 +27,7 @@ def main():
     server_socket.listen(5)
     # monitor known sockets for events
     while True:
-        # NOTE TODO: ~~~~~~~~CHECK THREADING FOR EACH LIST LOOP / LOCK VARS~~~~~~~~~
+        # NOTE TODO: ~~~~~~~~CHECK THREADING FOR EACH LIST LOOP / LOCK VARS~~~~~~~~~ REVISE W/ ONLY 1 SELECT LIST
         read_sockets, write_sockets, error_sockets = select(sel_inputs, sel_outputs, sel_inputs)
         for sock in read_sockets:
             if sock is server_socket:
