@@ -4,28 +4,23 @@ import time
 import random
 
 
-def message_dispatch(sock):
+def run_client():
+    sck = socket.socket()
+    sck.connect(('127.0.0.1', 8888))
+    time.sleep(1)
     for i in range(10):
-        time.sleep(random.random())
-        sock.send(("testing" + str(random.random())).encode())
+        time.sleep(0.5)
+        sck.send(('heres a random number: ' + str(random.random())).encode())
+    sck.close()
 
 
-sock = socket.socket()
+t1 = threading.Thread(target=run_client)
+t2 = threading.Thread(target=run_client)
+t3 = threading.Thread(target=run_client)
+t4 = threading.Thread(target=run_client)
+t5 = threading.Thread(target=run_client)
 
-sock.connect(("127.0.0.1", 6999))
+t_list = [t1,t2,t3,t4,t5]
 
-print("connected")
-
-sock_thread = threading.Thread(target=message_dispatch, args=(sock,))
-sock_thread.start()
-
-try:
-    while True:
-        msg = sock.recv(1024)
-        if msg:
-            print(msg.decode())
-except KeyboardInterrupt:
-    sock_thread.join()
-    sock.close()
-else:
-    pass
+for t in t_list:
+    t.start()
