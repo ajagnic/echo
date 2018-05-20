@@ -29,37 +29,40 @@ def remove_client(sock):
 
 def main():
     _server_sock.listen(5)
-    while _i:
-        incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
-        for sock in incoming_data:
-            if sock is _server_sock:
-                # new connection pending
-                new_client, addr = sock.accept()
-                new_client.setblocking(False)
-                _i.append(new_client)
-                _message_pipeline[new_client] = queue.Queue()
-            else:
-                # incoming message data
-                new_msg = sock.recv(2048)
-                if new_msg:
-                    for client in _message_pipeline.keys():
-                        if client not in _o:
-                            _o.append(client)
-                        if client is not sock:
-                            _message_pipeline[client].put(new_msg)
+    try:
+        while _i:
+            incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
+            for sock in incoming_data:
+                if sock is _server_sock:
+                    # new connection pending
+                    new_client, addr = sock.accept()
+                    new_client.setblocking(False)
+                    _i.append(new_client)
+                    _message_pipeline[new_client] = queue.Queue()
                 else:
-                    # closed connection
-                    remove_client(sock)
-        for sock in open_buffers:
-            # progress pipeline
-            try:
-                queued_msg = _message_pipeline[sock].get_nowait()
-            except queue.Empty:
-                _o.remove(sock)
-            else:
-                sock.send(queued_msg)
-        for sock in bad_socks:
-            remove_client(sock)
+                    # incoming message data
+                    new_msg = sock.recv(2048)
+                    if new_msg:
+                        for client in _message_pipeline.keys():
+                            if client not in _o:
+                                _o.append(client)
+                            if client is not sock:
+                                _message_pipeline[client].put(new_msg)
+                    else:
+                        # closed connection
+                        remove_client(sock)
+            for sock in open_buffers:
+                # progress pipeline
+                try:
+                    queued_msg = _message_pipeline[sock].get_nowait()
+                except queue.Empty:
+                    _o.remove(sock)
+                else:
+                    sock.send(queued_msg)
+            for sock in bad_socks:
+                remove_client(sock)
+    except KeyboardInterrupt:
+        _server_sock.close()
 
 
 
