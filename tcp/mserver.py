@@ -19,12 +19,6 @@ except IndexError:
     _host = '127.0.0.1'
     _port = 55555
 
-pipeline_prompt = input('Pipeline view(y/n)')
-if pipeline_prompt == 'y':
-    pipeline_view = True
-else:
-    pipeline_view = False
-
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 _server_sock.setblocking(False)
@@ -64,8 +58,7 @@ def main():
                     # incoming message data
                     new_msg = sock.recv(2048)
                     if new_msg:
-                        if pipeline_view:
-                            print(new_msg.decode())
+                        print(new_msg.decode())   # NOTE TODO temp for debugging
                         for client in _message_pipeline.keys():
                             if client not in _o:
                                 _o.append(client)
