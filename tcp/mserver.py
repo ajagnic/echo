@@ -42,7 +42,7 @@ def remove_client(sock):
         _o.remove(sock)
         sock.close()
     except:
-        print(f'Removal exception from {sock}.')
+        pass
     del _message_pipeline[sock]
     print(f'Socket object {sock} removed.')
 
