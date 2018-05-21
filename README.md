@@ -1,7 +1,7 @@
-### echo TCP server
+### echo
 multi-user echo server, runs locally
 
 #### Run
 ```
-python3 -m chat.mserver
+python3 -m tcp.mserver
 ```

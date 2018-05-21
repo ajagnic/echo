@@ -1,16 +1,25 @@
-''' tbd '''
+''' A non-blocking TCP echo server script. '''
 
 __author__ = 'Adrian Agnic'
-__version__ = '0.0.1'
+__version__ = '0.0.5'
 
 import socket
 import select
 import queue
+import sys
+
+
+try:
+    _host = str(sys.argv[1])
+    _port = int(sys.argv[2])
+except IndexError:
+    _host = '127.0.0.1'
+    _port = 55555
 
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 _server_sock.setblocking(False)
-_server_sock.bind(('127.0.0.1', 8888))
+_server_sock.bind((_host, _port))
 
 _i = [_server_sock]
 _o = []
