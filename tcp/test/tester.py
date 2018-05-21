@@ -6,7 +6,7 @@ import random
 
 def run_client():
     sck = socket.socket()
-    sck.connect(('127.0.0.1', 8888))
+    sck.connect(('127.0.0.1', 55555))
     time.sleep(1)
     for i in range(10):
         time.sleep(0.5)

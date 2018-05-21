@@ -9,11 +9,11 @@ class test_mserver(unittest.TestCase):
         self.test_socket = socket.socket()
     
     def test_connect(self):
-        self.test_socket.connect(('127.0.0.1', 8888))
+        self.test_socket.connect(('127.0.0.1', 55555))
 
     def test_message_pipeline(self):
         producer_socket = socket.socket()
-        producer_socket.connect(('127.0.0.1', 8888))
+        producer_socket.connect(('127.0.0.1', 55555))
         self.test_connect()
         producer_socket.send("test".encode())
         received_msg = None
