@@ -5,3 +5,9 @@ multi-user echo server, runs locally
 ```
 python3 -m tcp.mserver
 ```
+
+##### TODO
+*   ID system:
+    *   by IP
+*   encryption:
+    * RSA in python?
