@@ -19,7 +19,7 @@ from Crypto import Random
 
 _host = str(sys.argv[1])
 _port = int(sys.argv[2])
-__key = str(sys.argv[3]).encode()
+__key = hashlib.sha256(str(sys.argv[3]).encode()).digest()
 
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -46,7 +46,7 @@ def remove_client(sock):
 def encryptor(bmsg):
     salt = Random.new().read(AES.block_size)
     cipher = AES.new(__key, AES.MODE_CFB, salt)
-    return cipher.encrypt(bmsg)
+    return cipher.encrypt(bmsg) # bundle w/ salt
 
 
 def main():
