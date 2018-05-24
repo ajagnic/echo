@@ -62,7 +62,7 @@ def main():
                                 _o.append(client)
                             if client is not sock:
                                 origin = _message_pipeline[sock][1]+'\n'
-                                _message_pipeline[client][0].put(origin.encode())
+                                _message_pipeline[client][0].put(origin.encode())   # NOTE TODO handle differently
                                 _message_pipeline[client][0].put(new_msg)
                     else:
                         # closed connection
