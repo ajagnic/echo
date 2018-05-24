@@ -1,4 +1,9 @@
-''' A non-blocking TCP echo server script. '''
+''' A non-blocking TCP echo server script. 
+Script requires passing of three parameters:
+*   str: hostname for server
+*   int: port number to bind to
+*   str: password required for new clients
+'''
 
 __author__ = 'Adrian Agnic'
 __version__ = '0.0.5'
@@ -7,21 +12,24 @@ import socket
 import select
 import queue
 import sys
+import hashlib
+from Crypto.Cipher import AES
+from Crypto import Random
 
 
+_host = str(sys.argv[1])
+_port = int(sys.argv[2])
 try:
-    _host = str(sys.argv[1])
-    _port = int(sys.argv[2])
-except IndexError:
-    _host = '127.0.0.1'
-    _port = 55555
-    print('HOST/PORT were set to default values.')
+    __key = str(sys.argv[3]).encode()
+except:
+    print('Provide a server connection password.')
+    sys.exit()
 
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 _server_sock.setblocking(False)
 _server_sock.bind((_host, _port))
-print(f'Binded socket object:\n{_server_sock}\nOn HOST/PORT: {_host}:{_port}\n')
+print(f'Binded socket object:\n{_server_sock}\n\nOn HOST/PORT: {_host}:{_port}\n')
 
 _i = [_server_sock]
 _o = []
@@ -37,6 +45,12 @@ def remove_client(sock):
         pass
     print(f'Client {_message_pipeline[sock][1]} removed.')
     del _message_pipeline[sock]
+
+
+def encryptor(bmsg):
+    salt = Random.new().read(AES.block_size)
+    cipher = AES.new(__key, AES.MODE_CFB, salt)
+    return cipher.encrypt(bmsg)
 
 
 def main():
@@ -56,7 +70,6 @@ def main():
                     # incoming message data
                     new_msg = sock.recv(2048)
                     if new_msg:
-                        print(new_msg.decode())   # NOTE TODO temp for debugging
                         for client in _message_pipeline.keys():
                             if client not in _o:
                                 _o.append(client)
@@ -74,7 +87,7 @@ def main():
                 except queue.Empty:
                     _o.remove(sock)
                 else:
-                    sock.send(queued_msg)
+                    sock.send(encryptor(queued_msg))
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:
