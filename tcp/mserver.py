@@ -19,11 +19,7 @@ from Crypto import Random
 
 _host = str(sys.argv[1])
 _port = int(sys.argv[2])
-try:
-    __key = str(sys.argv[3]).encode()
-except:
-    print('Provide a server connection password.')
-    sys.exit()
+__key = str(sys.argv[3]).encode()
 
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
