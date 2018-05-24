@@ -53,7 +53,7 @@ def main():
                     new_client, addr = sock.accept()
                     new_client.setblocking(False)
                     _i.append(new_client)
-                    _message_pipeline[new_client] = queue.Queue()
+                    _message_pipeline[new_client] = (queue.Queue(), f'{addr[0]}:{addr[1]}')
                 else:
                     # incoming message data
                     new_msg = sock.recv(2048)
@@ -63,14 +63,16 @@ def main():
                             if client not in _o:
                                 _o.append(client)
                             if client is not sock:
-                                _message_pipeline[client].put(new_msg)
+                                origin = _message_pipeline[sock][1]+'\n'
+                                _message_pipeline[client][0].put(origin.encode())
+                                _message_pipeline[client][0].put(new_msg)
                     else:
                         # closed connection
                         remove_client(sock)
             for sock in open_buffers:
                 # progress pipeline
                 try:
-                    queued_msg = _message_pipeline[sock].get_nowait()
+                    queued_msg = _message_pipeline[sock][0].get_nowait()
                 except queue.Empty:
                     _o.remove(sock)
                 else:
