@@ -56,7 +56,6 @@ def main():
                     # incoming message data
                     new_msg = sock.recv(2048)
                     if new_msg:
-                        print(new_msg.decode())   # NOTE TODO temp for debugging
                         for client in _message_pipeline.keys():
                             if client not in _o:
                                 _o.append(client)
