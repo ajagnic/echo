@@ -13,11 +13,11 @@ try:
     _host = str(sys.argv[1])
     _port = int(sys.argv[2])
     if _port < 32768 or _port > 61000:
-        print('Please provide a port number in the ephemeral range (32768 - 61000). Setting to default...')
-        raise IndexError
+        print('Warning: Please provide port numbers in the ephemeral range (32768 - 61000).')
 except IndexError:
     _host = '127.0.0.1'
     _port = 55555
+    print('HOST/PORT were set to default values.')
 
 _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
