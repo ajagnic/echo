@@ -39,14 +39,14 @@ def remove_client(sock):
         sock.close()
     except:
         pass
-    print(f'Client {_message_pipeline[sock][1]} removed.')
+    print('Client '+ _message_pipeline[sock]['addr'] +' was removed.')
     del _message_pipeline[sock]
 
 
 def encryptor(bmsg):
     salt = Random.new().read(AES.block_size)
     cipher = AES.new(__key, AES.MODE_CFB, salt)
-    return cipher.encrypt(bmsg) # bundle w/ salt
+    return cipher.encrypt(bmsg)   # revise, look at MODE_CBC
 
 
 def main():
@@ -61,7 +61,7 @@ def main():
                     new_client, addr = sock.accept()
                     new_client.setblocking(False)
                     _i.append(new_client)
-                    _message_pipeline[new_client] = (queue.Queue(), f'{addr[0]}:{addr[1]}')
+                    _message_pipeline[new_client] = {'q': queue.Queue(), 'addr': f'{addr[0]}:{addr[1]}'}
                 else:
                     # incoming message data
                     new_msg = sock.recv(2048)
@@ -70,16 +70,14 @@ def main():
                             if client not in _o:
                                 _o.append(client)
                             if client is not sock:
-                                origin = _message_pipeline[sock][1]+'\n'
-                                _message_pipeline[client][0].put(origin.encode())   # NOTE TODO handle differently
-                                _message_pipeline[client][0].put(new_msg)
+                                _message_pipeline[client]['q'].put(new_msg)
                     else:
                         # closed connection
                         remove_client(sock)
             for sock in open_buffers:
                 # progress pipeline
                 try:
-                    queued_msg = _message_pipeline[sock][0].get_nowait()
+                    queued_msg = _message_pipeline[sock]['q'].get_nowait()
                 except queue.Empty:
                     _o.remove(sock)
                 else:
