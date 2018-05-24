@@ -12,8 +12,6 @@ import sys
 try:
     _host = str(sys.argv[1])
     _port = int(sys.argv[2])
-    if _port < 32768 or _port > 61000:
-        print('Warning: Please provide port numbers in the ephemeral range (32768 - 61000).')
 except IndexError:
     _host = '127.0.0.1'
     _port = 55555
@@ -37,8 +35,8 @@ def remove_client(sock):
         sock.close()
     except:
         pass
+    print(f'Client {_message_pipeline[sock][1]} removed.')
     del _message_pipeline[sock]
-    print(f'Socket object {sock} removed.')
 
 
 def main():
