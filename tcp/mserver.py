@@ -13,6 +13,7 @@ import select
 import queue
 import sys
 import hashlib
+import threading
 from Crypto.Cipher import AES
 from Crypto import Random
 
@@ -43,6 +44,19 @@ def remove_client(sock):
     del _message_pipeline[sock]
 
 
+def server_cmd():
+    while True:
+        cmd = input()
+        if cmd:
+            if cmd == 'q!':
+                _server_sock.close()
+                sys.exit()
+            elif cmd == 'users!':
+                print(len(_message_pipeline))
+            else:
+                pass
+
+
 def encryptor(bmsg):
     IV = Random.new().read(AES.block_size)
     cipher = AES.new(__key, AES.MODE_CBC, IV)
@@ -54,6 +68,9 @@ def encryptor(bmsg):
 
 
 def main():
+    cmd_t = threading.Thread(target=server_cmd)
+    cmd_t.daemon = True
+    cmd_t.start()
     _server_sock.listen(5)
     print('Awaiting clients.')
     try:
