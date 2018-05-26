@@ -44,9 +44,13 @@ def remove_client(sock):
 
 
 def encryptor(bmsg):
-    salt = Random.new().read(AES.block_size)
-    cipher = AES.new(__key, AES.MODE_CFB, salt)
-    return cipher.encrypt(bmsg)   # revise, look at MODE_CBC
+    IV = Random.new().read(AES.block_size)
+    cipher = AES.new(__key, AES.MODE_CBC, IV)
+    if len(bmsg) % 16 != 0:
+        pad_bmsg = bmsg + (' ' * (16-len(bmsg))).encode()
+    else:
+        pad_bmsg = bmsg
+    return cipher.encrypt(pad_bmsg), IV
 
 
 def main():
@@ -81,7 +85,9 @@ def main():
                 except queue.Empty:
                     _o.remove(sock)
                 else:
-                    sock.send(encryptor(queued_msg))
+                    msg_pack = encryptor(queued_msg)
+                    sock.send(msg_pack[1])
+                    sock.send(msg_pack[0])
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:

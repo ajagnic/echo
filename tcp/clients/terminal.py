@@ -16,9 +16,14 @@ client_sock.connect((host, port))
 
 def receiver():
     while True:
+        IV = None
+        if IV is None:
+            IV = client_sock.recv(16)
         recv_msg = client_sock.recv(2048)
         if recv_msg:
-            print(recv_msg.decode())
+            print(IV)
+            IV = None
+            print(recv_msg)
 
 t = threading.Thread(target=receiver)
 t.daemon = True
