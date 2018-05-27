@@ -13,7 +13,6 @@ import select
 import queue
 import sys
 import hashlib
-import threading
 from Crypto.Cipher import AES
 from Crypto import Random
 
@@ -26,7 +25,7 @@ _server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 _server_sock.setblocking(False)
 _server_sock.bind((_host, _port))
-print(f'Binded socket object:\n{_server_sock}\n\nOn HOST/PORT: {_host}:{_port}\n')
+print(f'\nBinded socket object:\n{_server_sock}\n\nOn HOST/PORT: {_host}:{_port}\n')
 
 _i = [_server_sock]
 _o = []
@@ -44,33 +43,17 @@ def remove_client(sock):
     del _message_pipeline[sock]
 
 
-def server_cmd():
-    while True:
-        cmd = input()
-        if cmd:
-            if cmd == 'q!':
-                _server_sock.close()
-                sys.exit()
-            elif cmd == 'users!':
-                print(len(_message_pipeline))
-            else:
-                pass
-
-
 def encryptor(bmsg):
     IV = Random.new().read(AES.block_size)
     cipher = AES.new(__key, AES.MODE_CBC, IV)
     if len(bmsg) % 16 != 0:
-        pad_bmsg = bmsg + (' ' * (16-len(bmsg))).encode()
+        pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
     else:
         pad_bmsg = bmsg
     return cipher.encrypt(pad_bmsg), IV
 
 
 def main():
-    cmd_t = threading.Thread(target=server_cmd)
-    cmd_t.daemon = True
-    cmd_t.start()
     _server_sock.listen(5)
     print('Awaiting clients.')
     try:
@@ -78,13 +61,12 @@ def main():
             incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
             for sock in incoming_data:
                 if sock is _server_sock:
-                    # new connection pending
                     new_client, addr = sock.accept()
                     new_client.setblocking(False)
                     _i.append(new_client)
                     _message_pipeline[new_client] = {'q': queue.Queue(), 'addr': f'{addr[0]}:{addr[1]}'}
+                    print(f'New client: {addr[0]}:{addr[1]}')
                 else:
-                    # incoming message data
                     new_msg = sock.recv(2048)
                     if new_msg:
                         for client in _message_pipeline.keys():
@@ -93,10 +75,8 @@ def main():
                             if client is not sock:
                                 _message_pipeline[client]['q'].put(new_msg)
                     else:
-                        # closed connection
                         remove_client(sock)
             for sock in open_buffers:
-                # progress pipeline
                 try:
                     queued_msg = _message_pipeline[sock]['q'].get_nowait()
                 except queue.Empty:
