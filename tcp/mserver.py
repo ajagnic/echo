@@ -17,17 +17,17 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 
-_host = str(sys.argv[1])
-_port = int(sys.argv[2])
+host = str(sys.argv[1])
+port = int(sys.argv[2])
 __key = hashlib.sha256(str(sys.argv[3]).encode()).digest()
 
-_server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-_server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-_server_sock.setblocking(False)
-_server_sock.bind((_host, _port))
-print(f'\nBinded socket object:\n{_server_sock}\n\nOn HOST/PORT: {_host}:{_port}\n')
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_sock.setblocking(False)
+server_sock.bind((host, port))
+print(f'\nBinded socket object:\n{server_sock}\n\nOn HOST/PORT: {host}:{port}\n')
 
-_i = [_server_sock]
+_i = [server_sock]
 _o = []
 _message_pipeline = {}
 
@@ -54,13 +54,13 @@ def encryptor(bmsg):
 
 
 def main():
-    _server_sock.listen(5)
+    server_sock.listen(5)
     print('Awaiting clients.')
     try:
         while _i:
             incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
             for sock in incoming_data:
-                if sock is _server_sock:
+                if sock is server_sock:
                     new_client, addr = sock.accept()
                     new_client.setblocking(False)
                     _i.append(new_client)
@@ -88,7 +88,7 @@ def main():
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:
-        _server_sock.close()
+        server_sock.close()
         print('Server shutdown.')
 
 
@@ -96,4 +96,4 @@ def main():
 if __name__ == '__main__':
     main()
 else:
-    _server_sock.close()
+    server_sock.close()
