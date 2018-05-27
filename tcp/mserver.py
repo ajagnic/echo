@@ -50,7 +50,7 @@ def encryptor(bmsg):
         pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
     else:
         pad_bmsg = bmsg
-    return cipher.encrypt(pad_bmsg), IV
+    return cipher.encrypt(pad_bmsg), IV   # return bmsg packed w/ IV, origin
 
 
 def main():
@@ -73,7 +73,7 @@ def main():
                             if client not in _o:
                                 _o.append(client)
                             if client is not sock:
-                                _message_pipeline[client]['q'].put(new_msg)
+                                _message_pipeline[client]['q'].put(new_msg)   # use structpack here for origin
                     else:
                         remove_client(sock)
             for sock in open_buffers:
@@ -82,9 +82,7 @@ def main():
                 except queue.Empty:
                     _o.remove(sock)
                 else:
-                    msg_pack = encryptor(queued_msg)
-                    sock.send(msg_pack[1])
-                    sock.send(msg_pack[0])
+                    sock.send(encryptor(queued_msg))
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:
