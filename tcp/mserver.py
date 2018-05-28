@@ -1,4 +1,4 @@
-''' A non-blocking TCP echo server script. 
+''' A non-blocking, encrypted TCP echo server. 
 Script requires passing of three parameters:
 *   str: hostname for server
 *   int: port number to bind to
@@ -8,10 +8,11 @@ Script requires passing of three parameters:
 __author__ = 'Adrian Agnic'
 __version__ = '0.0.5'
 
+import sys
 import socket
+import struct
 import select
 import queue
-import sys
 import hashlib
 from Crypto.Cipher import AES
 from Crypto import Random
@@ -33,24 +34,28 @@ _message_pipeline = {}
 
 
 def remove_client(sock):
+    addr = sock.getpeername()
     try:
         _i.remove(sock)
         _o.remove(sock)
         sock.close()
     except:
         pass
-    print('Client '+ _message_pipeline[sock]['addr'] +' was removed.')
     del _message_pipeline[sock]
+    print(f'Client {addr[0]}:{addr[1]} was removed.')
 
 
 def encryptor(bmsg):
-    IV = Random.new().read(AES.block_size)
-    cipher = AES.new(__key, AES.MODE_CBC, IV)
+    ''' Expands message to multiple of 16 bytes; returns packed metadata and encrypted data. '''
     if len(bmsg) % 16 != 0:
         pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
     else:
         pad_bmsg = bmsg
-    return cipher.encrypt(pad_bmsg), IV   # return bmsg packed w/ IV, origin
+    IV = Random.new().read(AES.block_size)
+    meta_bundle = (len(pad_bmsg), IV)
+    cipher = AES.new(__key, AES.MODE_CBC, IV)
+    bits = struct.pack(f'L 16s', *meta_bundle)
+    return bits, cipher.encrypt(pad_bmsg)
 
 
 def main():
@@ -61,10 +66,11 @@ def main():
             incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
             for sock in incoming_data:
                 if sock is server_sock:
+                    # new connection pending
                     new_client, addr = sock.accept()
                     new_client.setblocking(False)
                     _i.append(new_client)
-                    _message_pipeline[new_client] = {'q': queue.Queue(), 'addr': f'{addr[0]}:{addr[1]}'}
+                    _message_pipeline[new_client] = queue.Queue()
                     print(f'New client: {addr[0]}:{addr[1]}')
                 else:
                     new_msg = sock.recv(2048)
@@ -73,16 +79,18 @@ def main():
                             if client not in _o:
                                 _o.append(client)
                             if client is not sock:
-                                _message_pipeline[client]['q'].put(new_msg)   # use structpack here for origin
+                                _message_pipeline[client].put(new_msg)
                     else:
                         remove_client(sock)
             for sock in open_buffers:
                 try:
-                    queued_msg = _message_pipeline[sock]['q'].get_nowait()
+                    queued_msg = _message_pipeline[sock].get_nowait()
                 except queue.Empty:
                     _o.remove(sock)
                 else:
-                    sock.send(encryptor(queued_msg))
+                    msg_pack = encryptor(queued_msg)
+                    sock.sendall(msg_pack[0])   # expect 24 bytes,
+                    sock.sendall(msg_pack[1])   # expect msg_pack[0][0] bytes
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:
