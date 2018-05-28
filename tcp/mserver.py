@@ -2,7 +2,7 @@
 Script requires passing of three parameters:
 *   str: hostname for server
 *   int: port number to bind to
-*   str: password required for decryption
+*   str: password used by clients for decryption
 '''
 
 __author__ = 'Adrian Agnic'
