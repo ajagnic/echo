@@ -46,7 +46,6 @@ def remove_client(sock):
 
 
 def encryptor(bmsg):
-    ''' Expands message to multiple of 16 bytes; returns packed metadata and encrypted data. '''
     if len(bmsg) % 16 != 0:
         pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
     else:
