@@ -24,7 +24,7 @@ try:
     cfg = parser['TCP']
     __key = hashlib.sha256(sys.argv[2].encode()).digest()
 except:
-    parser.read('example_config.txt')
+    parser.read('example_config.ini')
     cfg = parser['DEFAULT']
     print('No config file found. Values defaulted')
     __key = hashlib.sha256(sys.argv[1].encode()).digest()
