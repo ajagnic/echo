@@ -1,5 +1,4 @@
 ### echo
-TCP server script 
 
 #### Run
 *   mserver requires the passing of a host url, port number, and password used for decryption
