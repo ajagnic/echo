@@ -16,3 +16,4 @@ python3 -m tcp.mserver 192.0.0.1 55555 supersecret
 *   logging
 *   client revision b4 upload
 *   docker comm bug
+*   filepath client

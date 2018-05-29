@@ -46,16 +46,17 @@ def remove_client(sock):
 
 
 def encryptor(bmsg):
-    # pad message to multiple of 16
+    ''' Pad message to atleast 16 bytes and encrypt with salt.
+    :return (bits): length of message, salt for decryption
+    :return: encrypted message data
+    '''
     if len(bmsg) % 16 != 0:
         pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
     else:
         pad_bmsg = bmsg
-    # 16 byte salt to aid encryption, used in decryption
     IV = Random.new().read(AES.block_size)
     meta_bundle = (len(pad_bmsg), IV)
     cipher = AES.new(__key, AES.MODE_CBC, IV)
-    # bits contains length of message to expect, IV for decryption
     bits = struct.pack('L 16s', *meta_bundle)
     return bits, cipher.encrypt(pad_bmsg)
 
