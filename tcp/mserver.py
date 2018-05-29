@@ -55,8 +55,8 @@ def encryptor(bmsg):
     IV = Random.new().read(AES.block_size)
     meta_bundle = (len(pad_bmsg), IV)
     cipher = AES.new(__key, AES.MODE_CBC, IV)
+    # bits contains length of message to expect, IV for decryption
     bits = struct.pack('L 16s', *meta_bundle)
-    # length of message, IV salt for decryption, and encrypted message
     return bits, cipher.encrypt(pad_bmsg)
 
 
@@ -92,7 +92,7 @@ def main():
                 else:
                     msg_pack = encryptor(queued_msg)
                     sock.sendall(msg_pack[0])   # expect 24 bytes
-                    sock.sendall(msg_pack[1])
+                    sock.sendall(msg_pack[1])   # expect msg_pack[0][0] bytes
             for sock in bad_socks:
                 remove_client(sock)
     except KeyboardInterrupt:

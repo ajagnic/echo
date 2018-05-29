@@ -1,12 +1,18 @@
 ### echo
-multi-user echo server, runs on LAN (w/ port-forwarding enabled)
+TCP server script 
 
 #### Run
-*   mserver requires the passing of a host url, port number, and a password for clients to connect
+*   mserver requires the passing of a host url, port number, and password used for decryption
 ```
 python3 -m tcp.mserver 192.0.0.1 55555 supersecret
 ```
 
+###### Security
+
+###### Developing a Client
+
 ###### TODO
-*   develop message packets
-    *   origin, timestamp, message
+*   parse config file in server
+*   logging
+*   client revision b4 upload
+*   docker comm bug

@@ -1,7 +1,7 @@
 ''' Simple threaded TCP producer/consumer '''
 
 __author__ = 'Adrian Agnic'
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 import socket
 import threading
