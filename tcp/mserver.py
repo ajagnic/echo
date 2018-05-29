@@ -1,7 +1,6 @@
 ''' A non-blocking, encrypted TCP echo server. 
-Script requires passing of three parameters:
-*   str: hostname for server
-*   int: port number to bind to
+Script requires passing of two parameters:
+*   str: filepath of config file
 *   str: password used by clients for decryption
 '''
 
@@ -14,19 +13,25 @@ import struct
 import select
 import queue
 import hashlib
+import configparser
 from Crypto.Cipher import AES
 from Crypto import Random
 
 
-host = str(sys.argv[1])
-port = int(sys.argv[2])
-__key = hashlib.sha256(str(sys.argv[3]).encode()).digest()
+parser = configparser.ConfigParser()
+try:
+    parser.read(sys.argv[1])
+    cfg = parser['TCP']
+    __key = hashlib.sha256(sys.argv[2].encode()).digest()
+except:
+    parser.read('example_config.txt')
+    cfg = parser['DEFAULT']
+    print('No config file found. Values defaulted')
+    __key = hashlib.sha256(sys.argv[1].encode()).digest()
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_sock.setblocking(False)
-server_sock.bind((host, port))
-print(f'\nBinded socket object:\n{server_sock}\n\nOn HOST/PORT: {host}:{port}\n')
 
 _i = [server_sock]
 _o = []
@@ -47,8 +52,8 @@ def remove_client(sock):
 
 def encryptor(bmsg):
     ''' Pad message to atleast 16 bytes and encrypt with salt.
-    :return (bits): length of message, salt for decryption
-    :return: encrypted message data
+    :return[0]: length of message, salt for decryption
+    :return[1]: encrypted message data
     '''
     if len(bmsg) % 16 != 0:
         pad_bmsg = bmsg + (' ' * ((16-len(bmsg))%16)).encode()
@@ -62,7 +67,9 @@ def encryptor(bmsg):
 
 
 def main():
-    server_sock.listen(5)
+    server_sock.bind((cfg['Host'], int(cfg['Port'])))
+    server_sock.listen(int(cfg['Backlog']))
+    print(f'\nBinded socket object:\n{server_sock}\n')
     print('Awaiting clients.')
     try:
         while _i:

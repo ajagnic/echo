@@ -1,10 +1,10 @@
 ### echo
-TCP server script 
+TCP server script that is non-blocking and utilizes AES encryption.
 
 #### Run
-*   mserver requires the passing of a host url, port number, and password used for decryption
+*   mserver requires the passing of a config file, and password used for decryption
 ```
-python3 -m tcp.mserver 192.0.0.1 55555 supersecret
+python3 -m tcp.mserver example_config.txt supersecret
 ```
 
 ###### Security
@@ -12,7 +12,6 @@ python3 -m tcp.mserver 192.0.0.1 55555 supersecret
 ###### Developing a Client
 
 ###### TODO
-*   parse config file in server
 *   logging
 *   client revision b4 upload
 *   docker comm bug
