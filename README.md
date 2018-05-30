@@ -4,7 +4,7 @@ TCP server script that is non-blocking and utilizes AES encryption.
 #### Run
 *   mserver requires the passing of a config file, and password used for decryption
 ```
-python3 -m tcp.mserver example_config.txt supersecret
+python3 -m tcp.mserver example_config.ini supersecret
 ```
 
 ###### Security
