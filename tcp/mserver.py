@@ -18,26 +18,6 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 
-parser = configparser.ConfigParser()
-try:
-    parser.read(sys.argv[1])
-    cfg = parser['TCP']
-    __key = hashlib.sha256(sys.argv[2].encode()).digest()
-except:
-    parser.read('example_config.ini')
-    cfg = parser['DEFAULT']
-    print('No config file found. Values defaulted')
-    __key = hashlib.sha256(sys.argv[1].encode()).digest()
-
-server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_sock.setblocking(False)
-
-_i = [server_sock]
-_o = []
-_message_pipeline = {}
-
-
 def remove_client(sock):
     addr = sock.getpeername()
     try:
@@ -69,8 +49,7 @@ def encryptor(bmsg):
 def main():
     server_sock.bind((cfg['Host'], int(cfg['Port'])))
     server_sock.listen(int(cfg['Backlog']))
-    print(f'\nBinded socket object:\n{server_sock}\n')
-    print('Awaiting clients.')
+    print('\nAwaiting clients.')
     try:
         while _i:
             incoming_data, open_buffers, bad_socks = select.select(_i, _o, _i)
@@ -83,7 +62,7 @@ def main():
                     _message_pipeline[new_client] = queue.Queue()
                     print(f'New client: {addr[0]}:{addr[1]}')
                 else:
-                    new_msg = sock.recv(2048)
+                    new_msg = sock.recv(int(cfg['BufferSize']))
                     if new_msg:
                         for client in _message_pipeline.keys():
                             if client not in _o:
@@ -110,6 +89,24 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = configparser.ConfigParser()
+    try:
+        parser.read(sys.argv[1])
+        cfg = parser['TCP']   # NOTE TODO revise for udp
+        __key = hashlib.sha256(sys.argv[2].encode()).digest()
+    except:
+        parser.read('example_config.ini')
+        cfg = parser['DEFAULT']
+        print('No config file found. Values defaulted\n')
+        for k in cfg: print(k,cfg[k])
+        __key = hashlib.sha256(sys.argv[1].encode()).digest()
+
+    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)# move to try for udp
+    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_sock.setblocking(False)
+
+    _i = [server_sock]
+    _o = []
+    _message_pipeline = {}
+
     main()
-else:
-    server_sock.close()
